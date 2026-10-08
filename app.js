@@ -6,11 +6,9 @@
   const byId = Object.fromEntries(COURSES.map(c => [c.id, c]));
   const gname = Object.fromEntries(R.groups.map(g => [g.key, g.label]));
 
-  // state.sel: { "courseId@sem": credit }   state.cc: { year: true }
-  const allCC = () => Object.fromEntries(R.creative.map(x => [x.year, true]));   // 창체는 기본적으로 모두 이수로 표시
-  let state = { sel: {}, cc: allCC(), sem: 0 };
+  // state.sel: { "courseId@sem": credit }
+  let state = { sel: {}, sem: 0 };
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.sel) state = Object.assign(state, s); } catch (e) {}
-  if (!state.ccInit) { state.cc = allCC(); state.ccInit = true; }   // 이전 저장값에도 한 번 적용
   const userOpen = {};   // 교과군 접힘 상태(화면 전환 간 유지, 저장은 안 함)
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
@@ -39,20 +37,17 @@
   const defCredit = (c, sem) => (offered[sem] && offered[sem].get(c.id)) ??
     (c.semCredits ? c.semCredits[sem] : c.credit);
 
-  // '공통' 표시 과목은 개설 과목표가 있는 학기에 처음 들어갈 때 자동 선택(제2외국어·정보는 제외).
-  // 한 번 적용한 학기는 다시 건드리지 않으므로 학생이 해제해도 유지됩니다.
+  // '공통' 표시 과목(제2외국어·정보 제외)은 개설 과목표가 있는 학기에 항상 선택되며 해제할 수 없다.
+  // 반복 불가 과목이 여러 학기에 개설되면 가장 이른 학기에만 고정한다.
+  const firstOffered = id => Math.min(...Object.keys(offered).filter(s => offered[s].has(id)).map(Number));
+  function isLocked(c, sem) {
+    if (c.level !== '공통' || c.sub || !(offered[sem] && offered[sem].has(c.id))) return false;
+    return c.repeat || firstOffered(c.id) === sem;
+  }
   function applyAuto() {
-    state.auto = state.auto || {};
-    Object.keys(offered).forEach(sem => {
-      if (state.auto[sem]) return;
-      state.auto[sem] = true;
-      offered[sem].forEach((cr, id) => {
-        const c = byId[id];
-        if (c.level !== '공통' || c.sub) return;
-        if (!c.repeat && takenSem(id) >= 0) return;
-        state.sel[id + '@' + sem] = cr;
-      });
-    });
+    Object.keys(offered).forEach(sem => offered[sem].forEach((cr, id) => {
+      if (isLocked(byId[id], +sem)) state.sel[id + '@' + sem] = cr;
+    }));
     save();
   }
   applyAuto();
@@ -66,7 +61,7 @@
     E.forEach(({ c, sem, credit }) => {
       subject += credit; semTot[sem] += credit; g[c.group] += credit;
     });
-    const creative = R.creative.reduce((s, x) => s + (state.cc[x.year] ? x.credit : 0), 0);
+    const creative = R.creativeTotal;   // 창체는 모두 이수로 고정
     return { g, semTot, subject, creative, all: subject + creative };
   }
 
@@ -143,11 +138,11 @@
       const rows = list.map(c => {
         const k = c.id + '@' + sem, on = state.sel[k] != null;
         const other = !c.repeat ? takenSem(c.id) : -1;
-        const dis = !on && other >= 0;
-        return `<div class="course ${on ? 'sel' : ''} ${dis ? 'dis' : ''}">
-          <label><input type="checkbox" data-k="${k}" ${on ? 'checked' : ''} ${dis ? 'disabled' : ''}>
+        const dis = !on && other >= 0, lock = isLocked(c, sem);
+        return `<div class="course ${on ? 'sel' : ''} ${dis ? 'dis' : ''} ${lock ? 'lock' : ''}">
+          <label><input type="checkbox" data-k="${k}" ${on ? 'checked' : ''} ${dis || lock ? 'disabled' : ''}>
           <span class="cname">${c.name}</span><span class="lv">${c.level}</span>
-          ${dis ? `<span class="hint">${SEM[other]} 선택됨</span>` : ''}</label>
+          ${dis ? `<span class="hint">${SEM[other]} 선택됨</span>` : ''}${lock ? '<span class="hint">필수 · 자동 선택</span>' : ''}</label>
           <div class="cr"><span>${defCredit(c, sem)}학점</span></div>
         </div>`;
       }).join('');
@@ -160,6 +155,7 @@
     $('list').querySelectorAll('details').forEach(d => d.ontoggle = () => { userOpen[d.dataset.g] = d.open; });
     $('list').querySelectorAll('input[type=checkbox]').forEach(i => i.onchange = () => {
       const k = i.dataset.k, [id, s] = k.split('@');
+      if (isLocked(byId[id], +s)) return;
       if (i.checked) state.sel[k] = defCredit(byId[id], +s); else delete state.sel[k];
       save(); renderAll();
     });
@@ -167,10 +163,7 @@
 
   function renderCC() {
     $('cc').innerHTML = R.creative.map(x =>
-      `<label><input type="checkbox" data-y="${x.year}" ${state.cc[x.year] ? 'checked' : ''}> ${x.year}학년 창체 ${x.credit}학점</label>`).join('');
-    $('cc').querySelectorAll('input').forEach(i => i.onchange = () => {
-      state.cc[i.dataset.y] = i.checked; save(); renderAll();
-    });
+      `<label class="lock"><input type="checkbox" checked disabled> ${x.year}학년 창체 ${x.credit}학점 <span class="hint">자동 반영</span></label>`).join('');
   }
 
   function renderAll() {
@@ -179,21 +172,8 @@
   }
 
   $('q').oninput = renderList;
-  $('fill1').onclick = () => {
-    const names = ['공통국어', '공통수학', '공통영어', '한국사', '통합사회', '통합과학', '과학탐구실험'];
-    [0, 1].forEach(sem => {
-      COURSES.forEach(c => {
-        const base = c.name.replace(/[12]$/, '');
-        if ((names.includes(base) && c.semOnly === sem) ||
-            ((c.id === 'PE' || c.name === '진로와 직업') && c.grades.includes(1))) {
-          const k = c.id + '@' + sem; if (state.sel[k] == null) state.sel[k] = defCredit(c, sem);
-        }
-      });
-    });
-    state.cc[1] = true; save(); renderAll();
-  };
   $('reset').onclick = () => {
-    if (confirm('선택한 모든 과목과 창체 체크를 지울까요?')) { state = { sel: {}, cc: allCC(), ccInit: true, sem: 0 }; applyAuto(); renderAll(); }
+    if (confirm('선택한 과목을 모두 지울까요? (필수 공통과목은 다시 자동 선택됩니다)')) { state = { sel: {}, sem: 0 }; applyAuto(); renderAll(); }
   };
   renderAll();
 })();
