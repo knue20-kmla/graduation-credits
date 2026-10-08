@@ -139,7 +139,10 @@ aside{position:sticky;top:96px}
 .req.ok .rbar i{background:var(--ok)}
 .actions{margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
 
-.cc{display:flex;gap:8px;flex-wrap:wrap}
+.cc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cc label{min-width:0;justify-content:center;flex-wrap:wrap;row-gap:0;text-align:center}
+.cc .nw{white-space:nowrap}
+@media(max-width:560px){.cc{gap:6px}.cc label{padding:8px 2px;font-size:12px;gap:3px;flex-wrap:nowrap}.cc input{width:14px;height:14px}.cc .hint{display:none}}
 .cc label{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:600}
 .course.lock label,.cc label.lock{cursor:default}
 .course.lock .hint{color:var(--navy-2);font-weight:600}
@@ -223,9 +226,9 @@ document.getElementById('qrOpen').onclick=function(){d.showModal()};
 document.getElementById('qrClose').onclick=function(){d.close()};
 d.addEventListener('click',function(e){if(e.target===d)d.close()});})();
 </script>
-<script src="courses.js?v=202610081354"></script>
-<script src="rules.js?v=202610081354"></script>
-<script src="offerings.js?v=202610081354"></script>
-<script src="app.js?v=202610081354"></script>
+<script src="courses.js?v=2026100804561"></script>
+<script src="rules.js?v=2026100804561"></script>
+<script src="offerings.js?v=2026100804561"></script>
+<script src="app.js?v=2026100804561"></script>
 </body>
 </html>

@@ -163,7 +163,7 @@
 
   function renderCC() {
     $('cc').innerHTML = R.creative.map(x =>
-      `<label class="lock"><input type="checkbox" checked disabled> ${x.year}학년 창체 ${x.credit}학점 <span class="hint">자동 반영</span></label>`).join('');
+      `<label class="lock"><input type="checkbox" checked disabled> <span class="nw">${x.year}학년 ${x.credit}학점</span> <span class="hint">자동 반영</span></label>`).join('');
   }
 
   function renderAll() {
