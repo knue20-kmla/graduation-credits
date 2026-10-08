@@ -32,7 +32,7 @@ button,input{font:inherit;color:inherit}
 .logo{width:58px;height:58px;object-fit:contain;flex:none;background:#fff;border-radius:50%;padding:3px;box-shadow:0 4px 14px rgba(0,0,0,.28)}
 .brand h1{margin:0;font-size:23px;line-height:1.2;letter-spacing:-.02em;font-weight:800}
 .brand p{margin:3px 0 0;font-size:13px;color:#c5d0f3}
-.gtabs{display:flex;gap:6px}
+.gtabs{display:flex;gap:6px;align-items:flex-end}
 .gtabs button{position:relative;border:0;cursor:pointer;padding:10px 22px 11px;border-radius:12px 12px 0 0;
   background:rgba(255,255,255,.08);color:#c5d0f3;font-weight:700;font-size:14px}
 .gtabs button small{display:block;font-weight:500;font-size:10.5px;opacity:.75;margin-top:-1px}
@@ -40,6 +40,17 @@ button,input{font:inherit;color:inherit}
 .gtabs button:disabled{cursor:not-allowed;opacity:.55}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .gtabs button[aria-selected=true]{color:#16244f;background:#dbe4ff}}
 
+.qr-btn{margin-left:auto;margin-bottom:10px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;border-radius:12px;padding:5px 10px 5px 5px;cursor:zoom-in;font-size:12px;font-weight:600;line-height:1.25;text-align:left}
+@media(max-width:560px){.gtabs button{padding:9px 13px 10px}.qr-btn{padding:4px}.qr-btn span{display:none}.qr-btn img{width:42px;height:42px}}
+.qr-btn:hover{background:rgba(255,255,255,.18)}
+.qr-btn img{width:38px;height:38px;border-radius:6px;background:#fff;display:block}
+.qr-btn small{display:block;font-weight:500;opacity:.75;font-size:10.5px}
+dialog.qr-dlg{border:0;border-radius:20px;padding:22px 22px 18px;max-width:min(92vw,380px);width:100%;text-align:center;background:var(--surface);color:var(--ink);box-shadow:0 24px 60px -10px rgba(0,0,0,.55)}
+dialog.qr-dlg::backdrop{background:rgba(10,16,36,.62);backdrop-filter:blur(3px)}
+.qr-dlg img{width:100%;max-width:300px;aspect-ratio:1;border-radius:12px;border:1px solid var(--line);display:block;margin:10px auto 12px}
+.qr-dlg h3{margin:0;font-size:17px}
+.qr-dlg p{margin:0;font-size:12.5px;color:var(--sub);word-break:break-all}
+.qr-dlg .btn{margin-top:14px}
 /* 요약 */
 .sum{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:10px 0;border-bottom:1px solid var(--line)}
 .sum-in{max-width:1120px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -112,16 +123,19 @@ aside{position:sticky;top:96px}
 .rhead p{margin:2px 0 0;font-size:12px;color:var(--sub)}
 .cnt{flex:none;font-size:12px;font-weight:800;padding:2px 10px;border-radius:99px;background:var(--surface);color:var(--sub);border:1px solid var(--line)}
 .cnt.full{background:var(--ok-soft);color:var(--ok);border-color:transparent}
-.req{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
-.rhead+.req{border-top:0}
+.req{display:flex;gap:10px;padding:10px 12px;margin-top:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);transition:background .25s,border-color .25s}
+.req.ok{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.req.ok .t{color:var(--ok)}
+.rhead+.req{margin-top:10px}
 .badge{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;margin-top:2px}
-.req.ok .badge{background:var(--ok-soft);color:var(--ok)}
+.req.ok .badge{background:var(--ok);color:#fff}
 .req.no .badge{background:var(--bad-soft);color:var(--bad)}
 .req .t{font-weight:700;font-size:14px}
 .req .d{font-size:12.5px;color:var(--sub)}
 .req.no .d b{color:var(--bad)}
 .rbar{height:5px;background:var(--line);border-radius:99px;margin-top:6px;overflow:hidden}
 .rbar i{display:block;height:100%;border-radius:99px;background:var(--navy-2);transition:width .35s ease}
+.req.ok .rbar{background:color-mix(in srgb,var(--ok) 22%,transparent)}
 .req.ok .rbar i{background:var(--ok)}
 .actions{margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
 
@@ -135,7 +149,7 @@ aside{position:sticky;top:96px}
 .foot ul{margin:0;padding-left:18px}
 .foot li{margin-bottom:3px}
 .empty{color:var(--sub);font-size:13px;padding:8px 0}
-@media print{.hero .gtabs,.sum{position:static;backdrop-filter:none}.tabs,.tools,.course:not(.sel),.actions{display:none}.card{break-inside:avoid;box-shadow:none}}
+@media print{.hero .gtabs,.sum{position:static;backdrop-filter:none}.tabs,.tools,.course:not(.sel),.actions,.qr-btn{display:none}.card{break-inside:avoid;box-shadow:none}}
 </style>
 </head>
 <body>
@@ -152,9 +166,19 @@ aside{position:sticky;top:96px}
       <button role="tab" disabled title="준비 중">1학년<small>준비 중</small></button>
       <button role="tab" aria-selected="true">2학년<small>이용 가능</small></button>
       <button role="tab" disabled title="준비 중">3학년<small>준비 중</small></button>
+      <button type="button" class="qr-btn" id="qrOpen" aria-haspopup="dialog" title="클릭하면 QR코드가 커집니다">
+        <img src="qr.svg" alt="접속용 QR코드"><span>QR 접속<small>눌러서 확대</small></span>
+      </button>
     </div>
   </div>
 </div>
+
+<dialog class="qr-dlg" id="qrDlg" aria-label="접속용 QR코드">
+  <h3>휴대폰으로 접속하기</h3>
+  <img src="qr.svg" alt="접속용 QR코드">
+  <p>https://knue20-kmla.github.io/graduation-credits/</p>
+  <button type="button" class="btn pri" id="qrClose">닫기</button>
+</dialog>
 
 <div class="sum"><div class="sum-in" id="sum"></div></div>
 
@@ -193,9 +217,15 @@ aside{position:sticky;top:96px}
   </ul>
 </div>
 
-<script src="courses.js?v=202610081344"></script>
-<script src="rules.js?v=202610081344"></script>
-<script src="offerings.js?v=202610081344"></script>
-<script src="app.js?v=202610081344"></script>
+<script>
+(function(){var d=document.getElementById('qrDlg');
+document.getElementById('qrOpen').onclick=function(){d.showModal()};
+document.getElementById('qrClose').onclick=function(){d.close()};
+d.addEventListener('click',function(e){if(e.target===d)d.close()});})();
+</script>
+<script src="courses.js?v=202610081354"></script>
+<script src="rules.js?v=202610081354"></script>
+<script src="offerings.js?v=202610081354"></script>
+<script src="app.js?v=202610081354"></script>
 </body>
 </html>

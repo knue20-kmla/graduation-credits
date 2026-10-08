@@ -142,7 +142,7 @@
         return `<div class="course ${on ? 'sel' : ''} ${dis ? 'dis' : ''} ${lock ? 'lock' : ''}">
           <label><input type="checkbox" data-k="${k}" ${on ? 'checked' : ''} ${dis || lock ? 'disabled' : ''}>
           <span class="cname">${c.name}</span><span class="lv">${c.level}</span>
-          ${dis ? `<span class="hint">${SEM[other]} 선택됨</span>` : ''}${lock ? '<span class="hint">필수 · 자동 선택</span>' : ''}</label>
+          ${dis ? `<span class="hint">${SEM[other]} 선택됨</span>` : ''}${lock ? '<span class="hint">필수</span>' : ''}</label>
           <div class="cr"><span>${defCredit(c, sem)}학점</span></div>
         </div>`;
       }).join('');
